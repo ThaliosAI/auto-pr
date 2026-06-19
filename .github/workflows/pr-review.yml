@@ -43,7 +43,7 @@ on:
       ollama-host:
         description: "Ollama API base URL (on the self-hosted runner)"
         type: string
-        default: "http://localhost:11434"
+        default: "http://localhost:11435"
       ollama-num-ctx:
         description: "Ollama context window size (tokens)"
         type: number
