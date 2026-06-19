@@ -127,7 +127,7 @@ jobs:
         run: |
           docker run --rm --network host \
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
-            -e CONFIG__AI_TIMEOUT=1800 \
+            -e CONFIG__AI_TIMEOUT=3600 \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
             -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
@@ -144,7 +144,7 @@ jobs:
         run: |
           docker run --rm --network host \
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
-            -e CONFIG__AI_TIMEOUT=1800 \
+            -e CONFIG__AI_TIMEOUT=3600 \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
             -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
