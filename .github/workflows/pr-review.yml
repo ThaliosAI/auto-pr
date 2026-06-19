@@ -39,7 +39,7 @@ on:
       ollama-model:
         description: "Ollama model name for PR-Agent review"
         type: string
-        default: "qwen3:30b"
+        default: "qwen3-30b-nothink"
       ollama-host:
         description: "Ollama API base URL (on the self-hosted runner)"
         type: string
@@ -123,17 +123,31 @@ jobs:
       pull-requests: write
       contents: read
     steps:
-      # Structured review: severity labels, security scan, estimated effort score
+      - name: Write PR-Agent config
+        run: |
+          cat > /tmp/pr_agent.toml << 'EOF'
+          [config]
+          model = "ollama/${{ inputs.ollama-model }}"
+          custom_model_max_tokens = ${{ inputs.ollama-num-ctx }}
+          fallback_models = []
+          publish_output_progress = false
+          include_generated_by_header = true
+
+          [ollama]
+          api_base = "${{ inputs.ollama-host }}"
+          ollama_num_ctx = ${{ inputs.ollama-num-ctx }}
+
+          [pr_reviewer]
+          extra_instructions = "Start your response directly with the YAML content. Do not add any introductory text, preamble, or explanation before or after the YAML block."
+
+          [pr_code_suggestions]
+          extra_instructions = "Start your response directly with the YAML content. Do not add any introductory text, preamble, or explanation before or after the YAML block."
+          EOF
+
       - name: Review PR
         run: |
           docker run --rm --network host \
-            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
-            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
-            -e CONFIG__FALLBACK_MODELS="[]" \
-            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
-            -e PR_REVIEWER__EXTRA_INSTRUCTIONS="Start your response directly with the YAML content. Do not add any introductory text, preamble, or explanation before or after the YAML block." \
-            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
-            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
+            -v /tmp/pr_agent.toml:/app/.pr_agent.toml \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
             codiumai/pr-agent:latest \
             --pr_url="${{ github.event.pull_request.html_url }}" review
@@ -141,13 +155,7 @@ jobs:
       - name: Suggest improvements
         run: |
           docker run --rm --network host \
-            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
-            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
-            -e CONFIG__FALLBACK_MODELS="[]" \
-            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
-            -e PR_CODE_SUGGESTIONS__EXTRA_INSTRUCTIONS="Start your response directly with the YAML content. Do not add any introductory text, preamble, or explanation before or after the YAML block." \
-            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
-            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
+            -v /tmp/pr_agent.toml:/app/.pr_agent.toml \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
             codiumai/pr-agent:latest \
             --pr_url="${{ github.event.pull_request.html_url }}" improve
