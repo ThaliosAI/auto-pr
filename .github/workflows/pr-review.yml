@@ -125,30 +125,29 @@ jobs:
     steps:
       - name: Write PR-Agent config
         run: |
-          python3 - << 'PYEOF'
-          config = """
-[config]
-model = "ollama/${{ inputs.ollama-model }}"
-custom_model_max_tokens = ${{ inputs.ollama-num-ctx }}
-fallback_models = []
-publish_output_progress = false
-include_generated_by_header = true
-
-[ollama]
-api_base = "${{ inputs.ollama-host }}"
-ollama_num_ctx = ${{ inputs.ollama-num-ctx }}
-think = false
-
-[pr_reviewer]
-extra_instructions = "Output only valid YAML matching the schema. No preamble or explanation."
-
-[pr_code_suggestions]
-extra_instructions = "Output only valid YAML matching the schema. No preamble or explanation."
-max_context_tokens = ${{ inputs.ollama-num-ctx }}
-""".strip()
-          with open("/tmp/pr_agent_conf.toml", "w") as f:
-              f.write(config)
-          PYEOF
+          python3 -c "
+          lines = [
+            '[config]',
+            'model = \"ollama/${{ inputs.ollama-model }}\"',
+            'custom_model_max_tokens = ${{ inputs.ollama-num-ctx }}',
+            'fallback_models = []',
+            'publish_output_progress = false',
+            'include_generated_by_header = true',
+            '',
+            '[ollama]',
+            'api_base = \"${{ inputs.ollama-host }}\"',
+            'ollama_num_ctx = ${{ inputs.ollama-num-ctx }}',
+            'think = false',
+            '',
+            '[pr_reviewer]',
+            'extra_instructions = \"Output only valid YAML. No preamble or explanation.\"',
+            '',
+            '[pr_code_suggestions]',
+            'max_context_tokens = ${{ inputs.ollama-num-ctx }}',
+            'extra_instructions = \"Output only valid YAML. No preamble or explanation.\"',
+          ]
+          open('/tmp/pr_agent_conf.toml', 'w').write('\n'.join(lines))
+          "
 
       - name: Review PR
         run: |
