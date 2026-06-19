@@ -47,7 +47,7 @@ on:
       ollama-num-ctx:
         description: "Ollama context window size (tokens)"
         type: number
-        default: 32768
+        default: 131072
       test-runner:
         description: "Runner for the test job — use 'ubuntu-latest' for lightweight repos"
         type: string
