@@ -1,0 +1,18 @@
+# PR-Agent shared defaults.
+# Copy this file to the root of any repo using auto-pr to customise behaviour.
+# Values here are overridden by the workflow inputs, then by repo-level .pr_agent.toml.
+# Full option reference: https://github.com/Codium-ai/pr-agent/blob/main/pr_agent/settings/configuration.toml
+
+[config]
+# Disable the AI-generated PR description (Ruff + tests already gate quality)
+enable_auto_describe = false
+
+[pr_reviewer]
+require_focused_review = true        # flags PRs that mix unrelated changes
+require_estimate_effort_to_review = true
+require_security_review = true
+num_code_suggestions = 0             # suggestions come from the separate `improve` step
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+summarize = true                     # group suggestions by topic

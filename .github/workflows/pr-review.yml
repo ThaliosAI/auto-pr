@@ -1,0 +1,140 @@
+# Reusable PR review pipeline.
+#
+# Call from any repo with:
+#
+#   jobs:
+#     review:
+#       uses: YOUR_ORG/auto-pr/.github/workflows/pr-review.yml@main
+#       secrets: inherit
+#
+# The LLM job runs on a self-hosted runner tagged [self-hosted, llm].
+# Register your RTX 5090 machine as a runner:
+#   Settings → Actions → Runners → New self-hosted runner
+#   Then add the label "llm" to the runner after registration.
+
+name: PR Review Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version"
+        type: string
+        default: "3.11"
+      coverage-threshold:
+        description: "Minimum test coverage %"
+        type: number
+        default: 80
+      install-cmd:
+        description: "Shell command to install project dependencies before tests"
+        type: string
+        default: >-
+          pip install -e ".[dev]" 2>/dev/null ||
+          pip install -r requirements-dev.txt 2>/dev/null ||
+          pip install pytest pytest-cov
+      test-cmd:
+        description: "Pytest invocation (coverage flag is appended automatically)"
+        type: string
+        default: "pytest -q"
+      ollama-model:
+        description: "Ollama model name for PR-Agent review"
+        type: string
+        default: "qwen3:30b"
+      ollama-host:
+        description: "Ollama API base URL (on the self-hosted runner)"
+        type: string
+        default: "http://localhost:11434"
+      ollama-num-ctx:
+        description: "Ollama context window size (tokens)"
+        type: number
+        default: 32768
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Stage 1: Ruff — style & syntax
+  # ─────────────────────────────────────────────
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Check style
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+  # ─────────────────────────────────────────────
+  # Stage 2: Pytest + coverage gate
+  # ─────────────────────────────────────────────
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: ${{ inputs.install-cmd }}
+
+      - name: Run tests
+        run: >-
+          ${{ inputs.test-cmd }}
+          --cov=.
+          --cov-report=xml
+          --cov-fail-under=${{ inputs.coverage-threshold }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Stage 3: PR-Agent review via local Ollama
+  # ─────────────────────────────────────────────
+  llm-review:
+    name: PR-Agent Review
+    runs-on: [self-hosted, llm]
+    needs: test
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      # Structured review: severity labels, security scan, estimated effort score
+      - name: Review PR
+        run: |
+          docker run --rm --network host \
+            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
+            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
+            -e GITHUB__USER_TOKEN="${{ github.token }}" \
+            codiumai/pr-agent:latest \
+            --pr_url="${{ github.event.pull_request.html_url }}" review
+
+      # Inline suggestions with ready-to-apply code diffs
+      - name: Suggest improvements
+        run: |
+          docker run --rm --network host \
+            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
+            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
+            -e GITHUB__USER_TOKEN="${{ github.token }}" \
+            codiumai/pr-agent:latest \
+            --pr_url="${{ github.event.pull_request.html_url }}" improve

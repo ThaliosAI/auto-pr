@@ -1,0 +1,25 @@
+# Drop this file into any repo at:
+#   .github/workflows/pr-review.yml
+#
+# Replace YOUR_ORG with your GitHub username or org name.
+# "secrets: inherit" passes GITHUB_TOKEN automatically.
+
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write   # required for the LLM job to post inline comments
+
+jobs:
+  review:
+    uses: YOUR_ORG/auto-pr/.github/workflows/pr-review.yml@main
+    secrets: inherit
+    # Optional overrides — omit to use defaults:
+    # with:
+    #   python-version: "3.12"
+    #   coverage-threshold: 85
+    #   install-cmd: "pip install -r requirements-dev.txt"
+    #   ollama-model: "deepseek-r1:32b"
