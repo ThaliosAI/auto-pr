@@ -128,17 +128,20 @@ jobs:
         run: |
           docker run --rm --network host \
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
+            -e CONFIG__FALLBACK_MODELS="[]" \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
             codiumai/pr-agent:latest \
             --pr_url="${{ github.event.pull_request.html_url }}" review
 
-      # Inline suggestions with ready-to-apply code diffs
       - name: Suggest improvements
         run: |
           docker run --rm --network host \
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
+            -e CONFIG__FALLBACK_MODELS="[]" \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
