@@ -132,6 +132,7 @@ jobs:
             -e CONFIG__FALLBACK_MODELS="[]" \
             -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
             -e CONFIG__INCLUDE_GENERATED_BY_HEADER=true \
+            -e CONFIG__TEMPERATURE=0 \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e OLLAMA__THINK=false \
@@ -153,6 +154,7 @@ jobs:
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
             -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
+            -e CONFIG__TEMPERATURE=0 \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e OLLAMA__THINK=false \
