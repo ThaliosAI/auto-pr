@@ -4,7 +4,7 @@
 #
 #   jobs:
 #     review:
-#       uses: YOUR_ORG/auto-pr/.github/workflows/pr-review.yml@main
+#       uses: YOUR_ORG/auto-pr/.github/workflows/pr-review.yml@master
 #       secrets: inherit
 #
 # The LLM job runs on a self-hosted runner tagged [self-hosted, llm].
