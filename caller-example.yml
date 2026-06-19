@@ -11,7 +11,8 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  pull-requests: write   # required for the LLM job to post inline comments
+  pull-requests: write
+  contents: read
 
 jobs:
   review:
