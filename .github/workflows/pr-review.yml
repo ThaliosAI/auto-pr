@@ -135,7 +135,12 @@ jobs:
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e OLLAMA__THINK=false \
-            -e PR_REVIEWER__EXTRA_INSTRUCTIONS="Output only valid YAML. No preamble." \
+            -e PR_REVIEWER__NUM_CODE_SUGGESTIONS=0 \
+            -e PR_REVIEWER__REQUIRE_FOCUSED_REVIEW=false \
+            -e PR_REVIEWER__REQUIRE_SECURITY_REVIEW=false \
+            -e PR_REVIEWER__REQUIRE_ESTIMATE_EFFORT_TO_REVIEW=false \
+            -e PR_REVIEWER__EXTRA_INSTRUCTIONS="Your entire response must be a single YAML object. Do not add any text before or after it. Do not use markdown code fences." \
+            -e LITELLM_LOG=DEBUG \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
             codiumai/pr-agent:latest \
             --pr_url="${{ github.event.pull_request.html_url }}" review
