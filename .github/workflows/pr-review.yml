@@ -39,7 +39,7 @@ on:
       ollama-model:
         description: "Ollama model name for PR-Agent review"
         type: string
-        default: "qwen3-30b-nothink"
+        default: "qwen3:30b"
       ollama-host:
         description: "Ollama API base URL (on the self-hosted runner)"
         type: string
