@@ -130,6 +130,7 @@ jobs:
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
+            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
@@ -142,6 +143,7 @@ jobs:
             -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
+            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
             -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
             -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
             -e GITHUB__USER_TOKEN="${{ github.token }}" \
