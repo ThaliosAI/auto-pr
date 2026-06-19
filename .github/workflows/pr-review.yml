@@ -48,6 +48,10 @@ on:
         description: "Ollama context window size (tokens)"
         type: number
         default: 32768
+      test-runner:
+        description: "Runner for the test job — use 'ubuntu-latest' for lightweight repos"
+        type: string
+        default: "self-hosted"
 
 jobs:
   # ─────────────────────────────────────────────
@@ -78,7 +82,7 @@ jobs:
   # ─────────────────────────────────────────────
   test:
     name: Test & Coverage
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.test-runner }}
     needs: lint
     steps:
       - uses: actions/checkout@v4
