@@ -91,6 +91,9 @@ jobs:
       - name: Install dependencies
         run: ${{ inputs.install-cmd }}
 
+      - name: Install pytest-cov
+        run: pip install pytest-cov
+
       - name: Run tests
         run: >-
           ${{ inputs.test-cmd }}
