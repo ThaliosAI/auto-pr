@@ -47,7 +47,7 @@ on:
       ollama-num-ctx:
         description: "Ollama context window size (tokens)"
         type: number
-        default: 32768
+        default: 65536
       test-runner:
         description: "Runner for the test job — use 'ubuntu-latest' for lightweight repos"
         type: string
@@ -127,7 +127,7 @@ jobs:
         continue-on-error: true
         run: |
           docker run --rm --network host \
-            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e CONFIG__MODEL="ollama_chat/${{ inputs.ollama-model }}" \
             -e CONFIG__AI_TIMEOUT=3600 \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
@@ -148,7 +148,7 @@ jobs:
         continue-on-error: true
         run: |
           docker run --rm --network host \
-            -e CONFIG__MODEL="ollama/${{ inputs.ollama-model }}" \
+            -e CONFIG__MODEL="ollama_chat/${{ inputs.ollama-model }}" \
             -e CONFIG__AI_TIMEOUT=3600 \
             -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
             -e CONFIG__FALLBACK_MODELS="[]" \
