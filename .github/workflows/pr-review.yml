@@ -45,9 +45,9 @@ on:
         type: string
         default: "http://localhost:11435"
       ollama-num-ctx:
-        description: "Ollama context window size (tokens)"
+        description: "Ollama context window size (tokens) — must match num_ctx in the model's Modelfile"
         type: number
-        default: 65536
+        default: 49152
       test-runner:
         description: "Runner for the test job — use 'ubuntu-latest' for lightweight repos"
         type: string
@@ -133,7 +133,7 @@ jobs:
         env:
           CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
           CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "32768"
           CONFIG__FALLBACK_MODELS: "[]"
           CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
           CONFIG__TEMPERATURE: "0"
@@ -148,7 +148,7 @@ jobs:
         env:
           CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
           CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "32768"
           CONFIG__FALLBACK_MODELS: "[]"
           CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
           CONFIG__INCLUDE_GENERATED_BY_HEADER: "true"
@@ -165,7 +165,7 @@ jobs:
         env:
           CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
           CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "32768"
           CONFIG__FALLBACK_MODELS: "[]"
           CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
           CONFIG__TEMPERATURE: "0"
