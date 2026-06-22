@@ -124,7 +124,9 @@ jobs:
       contents: read
     steps:
       - name: Install pr-agent
-        run: pip install pr-agent --upgrade --quiet
+        run: |
+          python3 -m venv /opt/pr-agent-venv --system-site-packages 2>/dev/null || true
+          /opt/pr-agent-venv/bin/pip install pr-agent --upgrade --quiet
 
       - name: Review PR
         continue-on-error: true
@@ -142,7 +144,7 @@ jobs:
           PR_REVIEWER__REQUIRE_SECURITY_REVIEW: "false"
           PR_REVIEWER__REQUIRE_ESTIMATE_EFFORT_TO_REVIEW: "false"
           GITHUB__USER_TOKEN: "${{ github.token }}"
-        run: python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
+        run: /opt/pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
 
       - name: Suggest improvements
         continue-on-error: true
@@ -156,4 +158,4 @@ jobs:
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
           PR_CODE_SUGGESTIONS__MAX_NUMBER_OF_CALLS: "1"
           GITHUB__USER_TOKEN: "${{ github.token }}"
-        run: python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" improve
+        run: /opt/pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" improve
