@@ -123,40 +123,37 @@ jobs:
       pull-requests: write
       contents: read
     steps:
+      - name: Install pr-agent
+        run: pip install pr-agent --upgrade --quiet
+
       - name: Review PR
         continue-on-error: true
-        run: |
-          docker run --rm --network host \
-            -e CONFIG__MODEL="ollama_chat/${{ inputs.ollama-model }}" \
-            -e CONFIG__AI_TIMEOUT=3600 \
-            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
-            -e CONFIG__FALLBACK_MODELS="[]" \
-            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
-            -e CONFIG__INCLUDE_GENERATED_BY_HEADER=true \
-            -e CONFIG__TEMPERATURE=0 \
-            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
-            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
-            -e PR_REVIEWER__NUM_CODE_SUGGESTIONS=0 \
-            -e PR_REVIEWER__REQUIRE_FOCUSED_REVIEW=false \
-            -e PR_REVIEWER__REQUIRE_SECURITY_REVIEW=false \
-            -e PR_REVIEWER__REQUIRE_ESTIMATE_EFFORT_TO_REVIEW=false \
-            -e GITHUB__USER_TOKEN="${{ github.token }}" \
-            codiumai/pr-agent:latest \
-            --pr_url="${{ github.event.pull_request.html_url }}" review
+        env:
+          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
+          CONFIG__AI_TIMEOUT: "3600"
+          CONFIG__FALLBACK_MODELS: "[]"
+          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
+          CONFIG__INCLUDE_GENERATED_BY_HEADER: "true"
+          CONFIG__TEMPERATURE: "0"
+          OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
+          OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
+          PR_REVIEWER__NUM_CODE_SUGGESTIONS: "0"
+          PR_REVIEWER__REQUIRE_FOCUSED_REVIEW: "false"
+          PR_REVIEWER__REQUIRE_SECURITY_REVIEW: "false"
+          PR_REVIEWER__REQUIRE_ESTIMATE_EFFORT_TO_REVIEW: "false"
+          GITHUB__USER_TOKEN: "${{ github.token }}"
+        run: python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
 
       - name: Suggest improvements
         continue-on-error: true
-        run: |
-          docker run --rm --network host \
-            -e CONFIG__MODEL="ollama_chat/${{ inputs.ollama-model }}" \
-            -e CONFIG__AI_TIMEOUT=3600 \
-            -e CONFIG__CUSTOM_MODEL_MAX_TOKENS="${{ inputs.ollama-num-ctx }}" \
-            -e CONFIG__FALLBACK_MODELS="[]" \
-            -e CONFIG__PUBLISH_OUTPUT_PROGRESS=false \
-            -e CONFIG__TEMPERATURE=0 \
-            -e OLLAMA__API_BASE="${{ inputs.ollama-host }}" \
-            -e OLLAMA__OLLAMA_NUM_CTX="${{ inputs.ollama-num-ctx }}" \
-            -e PR_CODE_SUGGESTIONS__MAX_NUMBER_OF_CALLS=1 \
-            -e GITHUB__USER_TOKEN="${{ github.token }}" \
-            codiumai/pr-agent:latest \
-            --pr_url="${{ github.event.pull_request.html_url }}" improve
+        env:
+          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
+          CONFIG__AI_TIMEOUT: "3600"
+          CONFIG__FALLBACK_MODELS: "[]"
+          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
+          CONFIG__TEMPERATURE: "0"
+          OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
+          OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
+          PR_CODE_SUGGESTIONS__MAX_NUMBER_OF_CALLS: "1"
+          GITHUB__USER_TOKEN: "${{ github.token }}"
+        run: python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" improve
