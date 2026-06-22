@@ -1,6 +1,6 @@
 # auto-pr
 
-Shared CI/CD and code review pipeline for ThaliosAI repos. Every PR automatically runs Ruff, Pytest, and a local LLM review via PR-Agent (Qwen3 30B).
+General purpose CI/CD and code review pipeline. Every PR automatically runs Ruff, Pytest, and a local LLM review via PR-Agent.
 
 ## How it works
 
@@ -20,7 +20,7 @@ Shared CI/CD and code review pipeline for ThaliosAI repos. Every PR automaticall
 [ Human Reviewer ] ──────> Focuses on architectural decisions only
 ```
 
-The Ruff and Pytest jobs run on GitHub-hosted runners. The PR-Agent job runs on the ThaliosAI self-hosted runner (`thalios-workstation-1`) which has local access to Ollama.
+The Ruff and Pytest jobs run on GitHub-hosted runners. The PR-Agent job runs on a self-hosted runner which has local access to a local LLM (Ollama).
 
 ## Adding auto-pr to a new repo
 
@@ -29,7 +29,7 @@ The Ruff and Pytest jobs run on GitHub-hosted runners. The PR-Agent job runs on 
 ```bash
 mkdir -p .github/workflows
 cp /path/to/auto-pr/caller-example.yml .github/workflows/pr-review.yml
-sed -i "s/YOUR_ORG/ThaliosAI/g" .github/workflows/pr-review.yml
+sed -i "s/YOUR_ORG/OrgName/g" .github/workflows/pr-review.yml
 ```
 
 ### 2. Add pre-commit hooks
@@ -84,7 +84,7 @@ The workflow accepts optional inputs to override defaults. Add a `with:` block t
 ```yaml
 jobs:
   review:
-    uses: ThaliosAI/auto-pr/.github/workflows/pr-review.yml@master
+    uses: YourOrg/auto-pr/.github/workflows/pr-review.yml@master
     secrets: inherit
     with:
       python-version: "3.12"
@@ -105,6 +105,6 @@ jobs:
 
 ## Infrastructure
 
-- **Self-hosted runner**: `thalios-workstation-1` — registered at the org level, tagged `self-hosted, llm`
+- **Self-hosted runner**: registered at the org level, tagged `self-hosted, llm`
 - **Ollama**: running locally on the workstation, serving `qwen3:30b`
 - **PR-Agent**: runs via `docker run codiumai/pr-agent:latest` with `--network host`
