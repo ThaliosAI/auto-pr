@@ -141,9 +141,6 @@ jobs:
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
           PR_REVIEWER__NUM_CODE_SUGGESTIONS: "0"
-          PR_REVIEWER__REQUIRE_FOCUSED_REVIEW: "false"
-          PR_REVIEWER__REQUIRE_SECURITY_REVIEW: "false"
-          PR_REVIEWER__REQUIRE_ESTIMATE_EFFORT_TO_REVIEW: "false"
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
 
