@@ -133,6 +133,7 @@ jobs:
         env:
           CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
           CONFIG__AI_TIMEOUT: "3600"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
           CONFIG__FALLBACK_MODELS: "[]"
           CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
           CONFIG__INCLUDE_GENERATED_BY_HEADER: "true"
@@ -151,6 +152,7 @@ jobs:
         env:
           CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
           CONFIG__AI_TIMEOUT: "3600"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
           CONFIG__FALLBACK_MODELS: "[]"
           CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
           CONFIG__TEMPERATURE: "0"
