@@ -128,6 +128,21 @@ jobs:
           python3 -m venv "$HOME/.pr-agent-venv" --system-site-packages
           $HOME/.pr-agent-venv/bin/pip install pr-agent --upgrade --quiet
 
+      - name: Describe PR
+        continue-on-error: true
+        env:
+          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
+          CONFIG__AI_TIMEOUT: "3600"
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "${{ inputs.ollama-num-ctx }}"
+          CONFIG__FALLBACK_MODELS: "[]"
+          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
+          CONFIG__TEMPERATURE: "0"
+          OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
+          OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
+          PR_DESCRIPTION__PUBLISH_LABELS: "false"
+          GITHUB__USER_TOKEN: "${{ github.token }}"
+        run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" describe
+
       - name: Review PR
         continue-on-error: true
         env:
@@ -141,6 +156,7 @@ jobs:
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
           PR_REVIEWER__NUM_CODE_SUGGESTIONS: "0"
+          PR_REVIEWER__EXTRA_INSTRUCTIONS: "Be specific. For each changed file, identify concrete concerns: unclear naming, missing error handling, potential edge cases, or design decisions worth discussing. Reference actual code from the diff. Do not default to 'no issues' without examining the code carefully."
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
 
@@ -156,5 +172,6 @@ jobs:
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
           PR_CODE_SUGGESTIONS__MAX_NUMBER_OF_CALLS: "1"
+          PR_CODE_SUGGESTIONS__EXTRA_INSTRUCTIONS: "Provide specific, targeted suggestions. Focus on correctness issues, missing guards, unclear logic, and code that could silently fail. Each suggestion must reference a concrete line or pattern from the diff."
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" improve
