@@ -11,6 +11,9 @@
 # Register your RTX 5090 machine as a runner:
 #   Settings → Actions → Runners → New self-hosted runner
 #   Then add the label "llm" to the runner after registration.
+#
+# Behaviour is configured via .pr_agent.toml in the calling repo.
+# Copy auto-pr/.pr_agent.toml to your repo root as a starting point.
 
 name: PR Review Pipeline
 
@@ -39,7 +42,7 @@ on:
       ollama-model:
         description: "Ollama model name for PR-Agent review"
         type: string
-        default: "qwen3-30b-pr:latest"
+        default: "qwen2.5-coder:32b-instruct-q8_0"
       ollama-host:
         description: "Ollama API base URL (on the self-hosted runner)"
         type: string
@@ -113,12 +116,13 @@ jobs:
 
   # ─────────────────────────────────────────────
   # Stage 3: PR-Agent review via local Ollama
+  # Disabled for now — set if: true to re-enable
   # ─────────────────────────────────────────────
   llm-review:
     name: PR-Agent Review
     runs-on: [self-hosted, llm]
     needs: test
-    if: github.event_name == 'pull_request'
+    if: false
     permissions:
       pull-requests: write
       contents: read
@@ -131,47 +135,23 @@ jobs:
       - name: Describe PR
         continue-on-error: true
         env:
-          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
-          CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "65536"
-          CONFIG__FALLBACK_MODELS: "[]"
-          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
-          CONFIG__TEMPERATURE: "0"
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
-          PR_DESCRIPTION__PUBLISH_LABELS: "false"
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" describe
 
       - name: Review PR
         continue-on-error: true
         env:
-          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
-          CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "65536"
-          CONFIG__FALLBACK_MODELS: "[]"
-          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
-          CONFIG__INCLUDE_GENERATED_BY_HEADER: "true"
-          CONFIG__TEMPERATURE: "0"
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
-          PR_REVIEWER__NUM_CODE_SUGGESTIONS: "0"
-          PR_REVIEWER__EXTRA_INSTRUCTIONS: "Be specific. For each changed file, identify concrete concerns: unclear naming, missing error handling, potential edge cases, or design decisions worth discussing. Reference actual code from the diff. Do not default to 'no issues' without examining the code carefully."
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" review
 
       - name: Suggest improvements
         continue-on-error: true
         env:
-          CONFIG__MODEL: "ollama_chat/${{ inputs.ollama-model }}"
-          CONFIG__AI_TIMEOUT: "3600"
-          CONFIG__CUSTOM_MODEL_MAX_TOKENS: "65536"
-          CONFIG__FALLBACK_MODELS: "[]"
-          CONFIG__PUBLISH_OUTPUT_PROGRESS: "false"
-          CONFIG__TEMPERATURE: "0"
           OLLAMA__API_BASE: "${{ inputs.ollama-host }}"
           OLLAMA__OLLAMA_NUM_CTX: "${{ inputs.ollama-num-ctx }}"
-          PR_CODE_SUGGESTIONS__MAX_NUMBER_OF_CALLS: "1"
-          PR_CODE_SUGGESTIONS__EXTRA_INSTRUCTIONS: "Provide specific, targeted suggestions. Focus on correctness issues, missing guards, unclear logic, and code that could silently fail. Each suggestion must reference a concrete line or pattern from the diff."
           GITHUB__USER_TOKEN: "${{ github.token }}"
         run: $HOME/.pr-agent-venv/bin/python -m pr_agent.cli --pr_url="${{ github.event.pull_request.html_url }}" improve
